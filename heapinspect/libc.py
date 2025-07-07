@@ -41,12 +41,26 @@ def get_libc_version(path):
     '''
     content = subprocess.Popen(['strings', path], stdout=subprocess.PIPE).stdout.read()
     content = content.decode() #py3 problem
-    pattern = "libc[- ]([0-9]+\.[0-9]+)"
+    pattern = r"libc[- ]([0-9]+\.[0-9]+)"
     result = re.findall(pattern, content)
     if result:
         return result[0]
     else:
         return ""
+
+def tcache_enable(libc_path):
+    try:
+        with open(libc_path, 'rb') as f:
+            data = f.read()
+        # Регулярка: минимум 6 печатных символов (как в `strings`)
+        strings = re.findall(rb'[\x20-\x7e]{6,}', data)
+        for s in strings:
+            if b"tcache" in s:
+                return True
+        return False
+    except Exception as e:
+        print(f"[!] Error reading libc: {e}")
+        return False
 
 
 def get_arena_info(libc_path, ld_path):
@@ -75,8 +89,9 @@ def get_arena_info(libc_path, ld_path):
     result = result.decode() #py3 problem
     shutil.rmtree(dir_path)
     dc = json.JSONDecoder()
-    return dc.decode(result)
-
+    result = dc.decode(result)
+    result['tcache_enable'] = tcache_enable(libc_path)
+    return result
 
 #def get_arena_info2(libc_path):
 #    '''Get the main arena infomation of the libc. (without ld.so)

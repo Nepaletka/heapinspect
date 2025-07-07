@@ -5,14 +5,14 @@ import codecs
 
 from heapinspect.common import get_arch
 
-LIBC_REGEX = '^[^\0]*libc(?:-[\d\.]+)?\.so(?:\.6)?$'
+LIBC_REGEX = r'^.*libc(?:-[\d.]+)?\.so(?:\.6)?$'
 '''str: The regex to match glibc.
 
 Note:
     The glibc basename should be like libc.so.6, libc-2.23.so, libc.so.
 '''
 
-LD_REGEX = '^[^\0]*ld(?:-[\d\.]+)?\.so(?:\.2)?$'
+LD_REGEX = r'.*/ld[^/]*\.so(\.\d+)*$'
 
 
 class Map(object):
